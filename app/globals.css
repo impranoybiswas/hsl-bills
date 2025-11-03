@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.select {
+  @apply border pl-2 py-2 rounded border-green-200 shadow w-full focus:outline-none text-white bg-green-700/50;
+}
+
+.select option {
+  @apply bg-green-200 text-green-800;
+}
+
+
+thead {
+  @apply text-center bg-green-400;
+}
+
+thead th {
+  @apply border border-green-700 px-4 py-2 ;
+}
+
+tbody td {
+  @apply border border-gray-300 px-4 py-2;
+}

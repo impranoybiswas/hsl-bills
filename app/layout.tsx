@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lato, Inter } from "next/font/google";
 import "./globals.css";
+import CustomLayout from "./components/CustomLayout";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -29,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lato.variable} ${inter.variable} antialiased`}>
-        {children}
+        <CustomLayout>{children}</CustomLayout>
       </body>
     </html>
   );
