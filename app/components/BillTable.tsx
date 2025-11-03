@@ -141,6 +141,7 @@ export default function BillsTable({userRole}: {userRole: string}) {
               <th>Invoice</th>
               <th>Date</th>
               <th>Customer</th>
+              <th>Quantity</th>
               <th>Amount</th>
               <th>Status</th>
               <th>Paid At</th>
@@ -181,6 +182,7 @@ export default function BillsTable({userRole}: {userRole: string}) {
                     {format(bill.date, "dd MMM yyyy")}
                   </td>
                   <td className="px-4 py-2">{bill.customer}</td>
+                  <td className="px-4 py-2 capitalize text-center">{bill.quantity.toLocaleString()}</td>
                   <td className="px-4 py-2 text-right font-semibold">
                     {bill.amount.toLocaleString()}
                   </td>

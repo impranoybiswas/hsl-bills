@@ -5,6 +5,7 @@ declare global {
     _id: string;
     invoice: string;
     customer: string;
+    quantity?: number | string;
     amount: number;
     status: string;
     date: string;
