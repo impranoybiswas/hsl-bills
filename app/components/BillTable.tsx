@@ -11,7 +11,7 @@ import { MdRadioButtonChecked } from "react-icons/md";
 import { FiEdit } from "react-icons/fi";
 import toast from "react-hot-toast";
 
-export default function BillsTable() {
+export default function BillsTable({userRole}: {userRole: string}) {
   const [status, setStatus] = useState("");
   const [customer, setCustomer] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -74,71 +74,69 @@ export default function BillsTable() {
     <section className="bg-white h-[calc(100vh-120px)]">
       {/* ===== Header Filters Section ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 bg-green-600 px-4 md:px-8 lg:px-10 py-2 text-white text-sm shadow">
-        {" "}
-        {/* States */}{" "}
+        
+        {/* States */}
         <div className="grid grid-cols-3 gap-2 md:gap-4">
-          {" "}
-          <div className="flex items-center select gap-2">
-            {" "}
-            <span className="size-3 rounded-full bg-sky-400 shadow" />{" "}
-            <small> Total Bills : </small> <strong>{bills.length}</strong>{" "}
-          </div>{" "}
-          <div className="flex items-center select gap-2">
-            {" "}
-            <span className="size-3 rounded-full bg-green-400 shadow" />{" "}
-            <small>Paid : </small>{" "}
-            <strong>৳{totalPaid.toLocaleString()}</strong>{" "}
-          </div>{" "}
-          <div className="flex items-center select gap-2">
-            {" "}
-            <span className="size-3 rounded-full bg-orange-400 shadow" />{" "}
-            <small>Pending : </small>{" "}
-            <strong>৳{totalPending.toLocaleString()}</strong>{" "}
-          </div>{" "}
-        </div>{" "}
-        {/* Filters */}{" "}
+         
+          <div className="flex flex-col lg:flex-row items-center select gap-2">
+            <div className="flex items-center gap-2"><span className="size-3 rounded-full bg-sky-400 shadow" />Total Bills</div>
+            <strong>{bills.length}</strong>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center select gap-2">
+            <div className="flex items-center gap-2"><span className="size-3 rounded-full bg-green-400 shadow" />Paid</div>
+            <strong>৳{totalPaid.toLocaleString()}</strong>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center select gap-2">
+            <div className="flex items-center gap-2"><span className="size-3 rounded-full bg-orange-400 shadow" />Pending</div>
+            <strong>৳{totalPending.toLocaleString()}</strong>
+          </div>
+
+        </div>
+        {/* Filters */}
         <div className="grid grid-cols-3 gap-2 md:gap-4 text-sm">
-          {" "}
+          
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
             className="select"
           >
-            {" "}
-            <option value="">Statuses</option>{" "}
-            <option value="paid">Paid</option>{" "}
-            <option value="pending">Pending</option>{" "}
-          </select>{" "}
+            
+            <option value="">Statuses</option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+          </select>
           <select
             value={customer}
             onChange={(e) => setCustomer(e.target.value)}
             className="select"
           >
-            {" "}
-            <option value="">Customers</option>{" "}
+            
+            <option value="">Customers</option>
             {uniqueCustomers.map((name) => (
               <option key={name} value={name}>
-                {" "}
-                {name}{" "}
+                
+                {name}
               </option>
-            ))}{" "}
-          </select>{" "}
+            ))}
+          </select>
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
             className="select"
           >
-            {" "}
-            <option value="desc">Descending</option>{" "}
-            <option value="asc">Ascending</option>{" "}
-          </select>{" "}
-        </div>{" "}
+            
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+          </select>
+        </div>
       </div>
 
       {/* ===== Table Section ===== */}
       <div className="w-full h-full overflow-y-scroll overflow-x-auto">
         <table className="min-w-full whitespace-nowrap">
-          <thead className="sticky top-0 z-10">
+          <thead className="sticky top-0">
             <tr>
               <th>Invoice</th>
               <th>Date</th>
@@ -155,7 +153,7 @@ export default function BillsTable() {
             <tbody>
               <tr>
                 <td colSpan={8}>
-                  <p className="text-center text-gray-600 mt-6">
+                  <p className="text-center text-gray-900 mt-6">
                     Loading bills...
                   </p>
                 </td>
@@ -172,7 +170,7 @@ export default function BillsTable() {
               </tr>
             </tbody>
           ) : (
-            <tbody>
+            <tbody className="text-gray-900">
               {bills.map((bill) => (
                 <tr
                   key={bill._id}
@@ -222,12 +220,12 @@ export default function BillsTable() {
       {/* ===== Edit Modal ===== */}
       {editBill && (
         <div
-          onClick={() => setEditBill(undefined)}
+
           className="fixed inset-0 bg-black/60 flex justify-center items-center z-100 px-4"
         >
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+          <div className="bg-white text-gray-900 rounded-lg p-6 w-full max-w-md shadow-xl">
             <h2 className="text-xl font-semibold mb-4">
-              Edit Bill for {editBill.invoice}
+              Edit Bill : {editBill.invoice}
             </h2>
 
             <form onSubmit={handleEditBill} className="space-y-4">
@@ -272,7 +270,8 @@ export default function BillsTable() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  disabled={userRole !== "editor"}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Save Changes
                 </button>
@@ -283,8 +282,8 @@ export default function BillsTable() {
       )}
 
       {/* ===== Floating Add Button ===== */}
-      <div className="fixed bottom-8 right-8">
-        <AddBill />
+      <div className="fixed bottom-10 right-10">
+        <AddBill userRole={userRole} />
       </div>
     </section>
   );

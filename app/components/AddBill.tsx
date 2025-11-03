@@ -8,8 +8,10 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { ToWords } from "to-words";
 import QRCode from "qrcode";
+import { CiCirclePlus } from "react-icons/ci";
+import toast from "react-hot-toast";
 
-export default function AddBill() {
+export default function AddBill({userRole}: {userRole: string}) {
   const [customerName, setCustomerName] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [expiryDate, setExpiryDate] = useState("");
@@ -206,6 +208,127 @@ Total: ৳${totalFormatted}`;
     doc.text(`________________________`, 145, 272);
     doc.text(`Received By`, 160, 278);
 
+    //copy sales 
+    doc.addPage();
+
+    // Centered Header Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("SALES INVOICE", 105, infoStartY, { align: "center" });
+
+    // Invoice + Date line
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Invoice No`, infoStartX, infoStartY + 16);
+    doc.setFont("levetica", "normal");
+    doc.text(`${":  " + invoice}`, infoStartX2, infoStartY + 16);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Date`, infoStartX, infoStartY + 22);
+    doc.setFont("levetica", "normal");
+    doc.text(
+      `${":  " + format(new Date(date), "dd MMM yyyy")}`,
+      infoStartX2,
+      infoStartY + 22
+    );
+
+    // Customer Info
+    doc.setFont("helvetica", "bold");
+    doc.text(`Customer ID`, infoStartX, infoStartY + 28);
+    doc.setFont("levetica", "normal");
+    doc.text(
+      `${":  " + selectedCustomer.customerId || "N/A"}`,
+      infoStartX2,
+      infoStartY + 28
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Customer`, infoStartX, infoStartY + 34);
+    doc.setFont("levetica", "normal");
+    doc.text(`${":  " + selectedCustomer.name}`, infoStartX2, infoStartY + 34);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Address`, infoStartX, infoStartY + 40);
+    doc.setFont("levetica", "normal");
+    doc.text(
+      `${":  " + selectedCustomer.address || "Not provided"}`,
+      infoStartX2,
+      infoStartY + 40
+    );
+
+    // Table Section
+    autoTable(doc, {
+      startY: infoStartY + 55,
+      head: [
+        [
+          "Product",
+          "Quantity",
+          {
+            content: "Unit Price (BDT)",
+            styles: { halign: "right", cellWidth: 40 },
+          },
+          {
+            content: "Amount (BDT)",
+            styles: { halign: "right", cellWidth: 40 },
+          },
+        ],
+      ],
+      body: [
+        [selectedCustomer.product, quantity, unitPrice, totalFormatted],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        [
+          { content: `In Word : ${totalInWords}`, colSpan: 2 },
+          {
+            content: "Total (BDT)",
+            styles: { halign: "right", cellWidth: 20, fontStyle: "bold" },
+          },
+          totalFormatted,
+        ],
+      ],
+      styles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        fontSize: 11,
+        lineWidth: 0.1,
+      },
+
+      headStyles: {
+        fontStyle: "bold",
+      },
+
+      columnStyles: {
+        0: { halign: "left" },
+        1: { halign: "center", cellWidth: 20 },
+        2: { halign: "right", cellWidth: 40 },
+        3: { halign: "right", cellWidth: 40 },
+      },
+    });
+
+    // Place QR under the table, centered
+
+    doc.addImage(qrDataUrl, "PNG", 166, infoStartY + 11, 30, 30);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`________________________`, 14, 272);
+    doc.text(`Authorized Signature`, 22, 278);
+
+    doc.text(`________________________`, 80, 272);
+    doc.text(`Store-in-Charge`, 93, 278);
+
+    doc.text(`________________________`, 145, 272);
+    doc.text(`Received By`, 160, 278);
+    
+
     //Delivery Challan
     if (!selectedCustomer.isMonthly) {
       doc.addPage();
@@ -309,7 +432,7 @@ Total: ৳${totalFormatted}`;
     }
 
     // Save PDF
-    doc.save(`Invoice_${invoice}.pdf`);
+    doc.save(`hsl-invoice-${invoice}.pdf`);
   };
 
   // Handle Bill Creation
@@ -317,7 +440,7 @@ Total: ৳${totalFormatted}`;
     e.preventDefault();
 
     if (!selectedCustomer) {
-      alert("Please select a customer first.");
+      toast.error("Please select a customer first.");
       return;
     }
 
@@ -328,7 +451,7 @@ Total: ৳${totalFormatted}`;
         amount: selectedCustomer.price * quantity,
       });
 
-      alert(`Bill added successfully! Invoice: ${response.data.invoice}`);
+      toast.success(`Bill added successfully! Invoice: ${response.data.invoice}`);
 
       generatePDF({
         invoice: response.data.invoice,
@@ -344,27 +467,28 @@ Total: ৳${totalFormatted}`;
       setExpiryDate("");
     } catch (error) {
       console.error("Error adding bill:", error);
-      alert("Failed to add bill. Check console for details.");
+      toast.error("Failed to add bill. Check console for details.");
     }
   };
 
   return (
-    <>
+    <div className="w-full h-full relative z-1000">
       <button
         onClick={() => setShowModal(true)}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition flex items-center
+        gap-2 font-semibold cursor-pointer shadow-sm"
       >
-        ADD BILL
+        <CiCirclePlus size={22} /> ADD BILL
       </button>
 
       {showModal && (
         <div
           onClick={() => setShowModal(false)}
-          className="fixed inset-0 bg-black/50 flex justify-center items-center z-100"
+          className="fixed inset-0 bg-black/70 flex justify-center items-center z-100"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg"
+            className="bg-white text-gray-900 rounded-lg p-6 w-full max-w-md shadow-lg"
           >
             <h2 className="text-lg font-semibold mb-4 text-center">
               Create New Bill
@@ -397,11 +521,12 @@ Total: ৳${totalFormatted}`;
                   ))}
                 </select>
               )}
-
+              <p className="text-sm text-center mt-3">Expiry Date</p>
               <input
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
+                
                 className="border px-3 py-2 rounded-md w-full"
               />
 
@@ -416,14 +541,20 @@ Total: ৳${totalFormatted}`;
 
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                disabled={userRole !== "editor"}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
-                Add Bill
+                Add & Download
               </button>
             </form>
+            {userRole !== "editor" && (
+              <p className="mt-3 text-sm text-red-500 text-center">
+                Only Editor can add new Bills
+              </p>
+            )}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -13,21 +15,13 @@ export default function Navbar() {
         width={100}
         height={100}
       />
-      {status === "loading" && <div className="loader" />}
-      {status === "unauthenticated" && (
-        <button
-          onClick={() => signOut()}
-          className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition"
-        >
-          Log out
-        </button>
-      )}
+      {status === "loading" && <AiOutlineLoading3Quarters size={20} className="animate-spin" />}
       {status === "authenticated" && (
         <div className="flex items-center gap-4">
           
         <button
           onClick={() => signOut()}
-          className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition"
+          className="text-sm h-8 px-3 bg-red-500 hover:bg-red-600 text-white rounded font-medium transition shadow-sm cursor-pointer"
         >
           Log out
         </button>
