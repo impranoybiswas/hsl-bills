@@ -11,7 +11,7 @@ import QRCode from "qrcode";
 import { CiCirclePlus } from "react-icons/ci";
 import toast from "react-hot-toast";
 
-export default function AddBill({userRole}: {userRole: string}) {
+export default function AddBill({ userRole }: { userRole: string }) {
   const [customerName, setCustomerName] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [expiryDate, setExpiryDate] = useState("");
@@ -129,11 +129,11 @@ export default function AddBill({userRole}: {userRole: string}) {
           "Quantity",
           {
             content: "Unit Price (BDT)",
-            styles: { halign: "right", cellWidth: 40 },
+            styles: { halign: "right", cellWidth: 35 },
           },
           {
             content: "Amount (BDT)",
-            styles: { halign: "right", cellWidth: 40 },
+            styles: { halign: "right", cellWidth: 35 },
           },
         ],
       ],
@@ -208,7 +208,7 @@ Total: ৳${totalFormatted}`;
     doc.text(`________________________`, 145, 272);
     doc.text(`Received By`, 160, 278);
 
-    //copy sales 
+    //copy sales
     doc.addPage();
 
     // Centered Header Title
@@ -265,11 +265,11 @@ Total: ৳${totalFormatted}`;
           "Quantity",
           {
             content: "Unit Price (BDT)",
-            styles: { halign: "right", cellWidth: 40 },
+            styles: { halign: "right", cellWidth: 35 },
           },
           {
             content: "Amount (BDT)",
-            styles: { halign: "right", cellWidth: 40 },
+            styles: { halign: "right", cellWidth: 35 },
           },
         ],
       ],
@@ -327,7 +327,6 @@ Total: ৳${totalFormatted}`;
 
     doc.text(`________________________`, 145, 272);
     doc.text(`Received By`, 160, 278);
-    
 
     //Delivery Challan
     if (!selectedCustomer.isMonthly) {
@@ -451,7 +450,9 @@ Total: ৳${totalFormatted}`;
         amount: selectedCustomer.price * quantity,
       });
 
-      toast.success(`Bill added successfully! Invoice: ${response.data.invoice}`);
+      toast.success(
+        `Bill added successfully! Invoice: ${response.data.invoice}`
+      );
 
       generatePDF({
         invoice: response.data.invoice,
@@ -526,7 +527,6 @@ Total: ৳${totalFormatted}`;
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                
                 className="border px-3 py-2 rounded-md w-full"
               />
 
