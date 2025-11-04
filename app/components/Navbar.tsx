@@ -1,8 +1,7 @@
 "use client";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FcGoogle } from "react-icons/fc";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -15,23 +14,24 @@ export default function Navbar() {
         width={100}
         height={100}
       />
-      {status === "loading" && <AiOutlineLoading3Quarters size={20} className="animate-spin" />}
+      {status === "loading" && (
+        <AiOutlineLoading3Quarters size={20} className="animate-spin" />
+      )}
       {status === "authenticated" && (
         <div className="flex items-center gap-4">
-          
-        <button
-          onClick={() => signOut()}
-          className="text-sm h-8 px-3 bg-red-500 hover:bg-red-600 text-white rounded font-medium transition shadow-sm cursor-pointer"
-        >
-          Log out
-        </button>
-        <Image
-          className="size-8 rounded-full object-cover shadow-sm"
-          src={session?.user?.image || "/title.png"}
-          alt="HSL Title"
-          width={100}
-          height={100}
-        />
+          <button
+            onClick={() => signOut()}
+            className="text-sm h-8 px-3 bg-red-500 hover:bg-red-600 text-white rounded font-medium transition shadow-sm cursor-pointer"
+          >
+            Log out
+          </button>
+          <Image
+            className="size-8 rounded-full object-cover shadow-sm"
+            src={session?.user?.image || "/title.png"}
+            alt="HSL Title"
+            width={100}
+            height={100}
+          />
         </div>
       )}
     </nav>

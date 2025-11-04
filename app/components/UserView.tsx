@@ -1,7 +1,8 @@
 "use client";
+
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import React from "react";
+
 
 export default function UserView() {
   const { data: session, status } = useSession();

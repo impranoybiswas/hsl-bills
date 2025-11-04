@@ -5,7 +5,7 @@ declare global {
     _id: string;
     invoice: string;
     customer: string;
-    quantity?: number | string;
+    quantity: number | string;
     amount: number;
     status?: string;
     date: string;
@@ -23,7 +23,7 @@ declare global {
     product: string;
   }
 
-  interface pdfBill {
+  interface Invoice {
     invoice: string;
     date: string;
     selectedCustomer: Customer;
@@ -53,4 +53,4 @@ declare module "next-auth/jwt" {
   }
 }
 
-export{};
+export {};

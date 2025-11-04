@@ -8,7 +8,10 @@ interface UseCustomersOptions {
   enabled?: boolean;
 }
 
-export function useCustomers({ name, enabled = true }: UseCustomersOptions = {}) {
+export function useCustomers({
+  name,
+  enabled = true,
+}: UseCustomersOptions = {}) {
   return useQuery({
     queryKey: ["customers", name],
     queryFn: async (): Promise<Customer[]> => {

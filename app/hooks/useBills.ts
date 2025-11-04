@@ -3,21 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosSecure from "../libs/axiosSecure";
 
-interface Bill {
-  _id: string;
-  invoice: string;
-  customer: string;
-  amount: number;
-  date: string;
-  status: string;
-  method: string;
-  paidAt?: string | Date;
-}
-
 interface UseBillsOptions {
   customer?: string;
   status?: string;
-  sortOrder?: "asc" | "desc"; // ascending or descending
+  sortOrder?: "asc" | "desc";
   enabled?: boolean;
 }
 

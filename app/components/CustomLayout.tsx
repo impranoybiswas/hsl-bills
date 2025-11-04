@@ -12,7 +12,7 @@ export default function CustomLayout({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <Toaster />
+        <Toaster position="top-center" />
         <Navbar />
         {children}
       </QueryClientProvider>

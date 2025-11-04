@@ -3,21 +3,16 @@
 import { useState, useMemo } from "react";
 import { useBills } from "../hooks/useBills";
 import { useCustomers } from "../hooks/useCustomers";
-import axiosSecure from "../libs/axiosSecure";
 import AddBill from "./AddBill";
 import { format } from "date-fns";
 import { GoCheckCircleFill } from "react-icons/go";
 import { MdRadioButtonChecked } from "react-icons/md";
-import { FiEdit } from "react-icons/fi";
-import toast from "react-hot-toast";
+import EditBill from "./EditBill";
 
 export default function BillsTable({userRole}: {userRole: string}) {
   const [status, setStatus] = useState("");
   const [customer, setCustomer] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [editBill, setEditBill] = useState<Bill>();
-  const [newStatus, setNewStatus] = useState("");
-  const [method, setMethod] = useState("");
 
   const {
     data: bills = [],
@@ -49,26 +44,6 @@ export default function BillsTable({userRole}: {userRole: string}) {
         .reduce((sum, b) => sum + b.amount, 0),
     [bills]
   );
-
-  const handleEditBill = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editBill) return;
-
-    try {
-      await axiosSecure.patch("/api/bills", {
-        id: editBill._id,
-        status: newStatus,
-        method,
-      });
-
-      toast.success("Bill updated successfully!");
-      setEditBill(undefined);
-      refetch();
-    } catch (error) {
-      console.error("❌ Error updating bill:", error);
-      toast.error("Failed to update bill. Check console for details.");
-    }
-  };
 
   return (
     <section className="bg-white h-[calc(100vh-120px)]">
@@ -182,7 +157,7 @@ export default function BillsTable({userRole}: {userRole: string}) {
                     {format(bill.date, "dd MMM yyyy")}
                   </td>
                   <td className="px-4 py-2">{bill.customer}</td>
-                  <td className="px-4 py-2 capitalize text-center">{bill.quantity.toLocaleString()}</td>
+                  <td className="px-4 py-2 capitalize text-center">{bill.quantity}</td>
                   <td className="px-4 py-2 text-right font-semibold">
                     {bill.amount.toLocaleString()}
                   </td>
@@ -206,11 +181,9 @@ export default function BillsTable({userRole}: {userRole: string}) {
                     {bill.method || "—"}
                   </td>
                   <td
-                    onClick={() => setEditBill(bill)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white cursor-pointer flex items-center justify-center gap-2"
+                    className="py-2  "
                   >
-                    <FiEdit />
-                    Edit
+                    <EditBill userRole={userRole} bill={bill} refetch={refetch} />
                   </td>
                 </tr>
               ))}
@@ -219,69 +192,6 @@ export default function BillsTable({userRole}: {userRole: string}) {
         </table>
       </div>
 
-      {/* ===== Edit Modal ===== */}
-      {editBill && (
-        <div
-
-          className="fixed inset-0 bg-black/60 flex justify-center items-center z-100 px-4"
-        >
-          <div className="bg-white text-gray-900 rounded-lg p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-xl font-semibold mb-4">
-              Edit Bill : {editBill.invoice}
-            </h2>
-
-            <form onSubmit={handleEditBill} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-md"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="paid">Paid</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Payment Method
-                </label>
-                <select
-                  value={method}
-                  onChange={(e) => setMethod(e.target.value)}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-md"
-                >
-                  <option value="">Select Method</option>
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
-                  <option value="bank">Bank Transfer</option>
-                  <option value="mobile">Mobile Payment</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setEditBill(undefined)}
-                  className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={userRole !== "editor"}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* ===== Floating Add Button ===== */}
       <div className="fixed bottom-10 right-10">
