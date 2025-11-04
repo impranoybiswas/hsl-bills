@@ -43,10 +43,10 @@ export default function EditBill({
     }
   };
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full">
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center justify-center gap-2  cursor-pointer w-full h-full text-blue-600 hover:text-blue-800"
+        className="flex items-center justify-center gap-2 cursor-pointer w-full h-full text-blue-600 hover:text-blue-800"
       >
         <FiEdit /> Edit
       </button>
@@ -54,7 +54,7 @@ export default function EditBill({
       {showModal && (
         <div
           onClick={() => setShowModal(false)}
-          className="fixed inset-0 bg-black/70 flex justify-center items-center z-100"
+          className="fixed inset-0 bg-black/70 flex justify-center items-center z-10"
         >
           <div
             onClick={(e) => e.stopPropagation()}

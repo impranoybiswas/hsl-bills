@@ -3,9 +3,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useCustomers } from "../hooks/useCustomers";
 import axiosSecure from "../libs/axiosSecure";
-import { CiCirclePlus } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { generatePDF } from "../libs/generatePDF";
+import { HiOutlinePlus } from "react-icons/hi2";
 
 export default function AddBill({ userRole }: { userRole: string }) {
   const [customerName, setCustomerName] = useState("");
@@ -50,7 +50,7 @@ export default function AddBill({ userRole }: { userRole: string }) {
     try {
       const response = await axiosSecure.post("/api/bills", {
         customer: selectedCustomer.name,
-        quantity:selectedCustomer.isMonthly ? "monthly" : quantity,
+        quantity: selectedCustomer.isMonthly ? "monthly" : quantity,
         amount: selectedCustomer.price * quantity,
       });
 
@@ -77,13 +77,15 @@ export default function AddBill({ userRole }: { userRole: string }) {
   };
 
   return (
-    <div className="w-full h-full relative z-1000">
+    <div className="w-full h-full relative z-100">
       <button
         onClick={() => setShowModal(true)}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition flex items-center
-        gap-2 font-semibold cursor-pointer shadow-sm"
+        className="bg-green-600 hover:bg-green-700 text-white p-2 pr-4 rounded-full transition flex items-center gap-2 cursor-pointer shadow-sm group"
       >
-        <CiCirclePlus size={22} /> ADD BILL 2
+        <span className="border border-white p-1 rounded-full group-hover:bg-green-800">
+          <HiOutlinePlus size={14} />
+        </span>
+        ADD BILL
       </button>
 
       {showModal && (

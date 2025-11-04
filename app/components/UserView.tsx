@@ -8,7 +8,7 @@ export default function UserView() {
   const { data: session, status } = useSession();
   return (
     <div className="w-full py-20 flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-semibold text-green-900 mb-6">
+      <h1 className="text-3xl font-semibold text-green-600 mb-6">
         Welcome to HSL Bills
       </h1>
       Hello {status === "loading" ? "User" : session?.user?.name}

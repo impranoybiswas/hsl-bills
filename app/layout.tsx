@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Healthcare Solutions Ltd | Bills",
+  title: "Healthcare Solutions Ltd | Bills by Pranoy",
   description: "Healthcare Solutions Ltd Company Bills by Pranoy Biswas Bappa",
   keywords: ["Bills", "Next.js", "Healthcare", "Solutions"],
 };

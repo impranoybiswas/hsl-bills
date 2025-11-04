@@ -6,7 +6,9 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 export default function Navbar() {
   const { data: session, status } = useSession();
   return (
-    <nav className="h-14 bg-lime-50 w-full shadow-sm flex items-center justify-between px-4 md:px-8 lg:px-10">
+    <nav className="h-14 w-full border-b border-green-800/50 shadow flex items-center justify-between px-4 md:px-8 lg:px-12">
+
+    
       <Image
         className="h-8 w-fit"
         src="/title.png"
@@ -18,15 +20,15 @@ export default function Navbar() {
         <AiOutlineLoading3Quarters size={20} className="animate-spin" />
       )}
       {status === "authenticated" && (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => signOut()}
-            className="text-sm h-8 px-3 bg-red-500 hover:bg-red-600 text-white rounded font-medium transition shadow-sm cursor-pointer"
+            className="text-sm h-8 px-4 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition shadow-sm cursor-pointer flex items-center gap-2"
           >
             Log out
           </button>
           <Image
-            className="size-8 rounded-full object-cover shadow-sm"
+            className="size-8 rounded-full object-cover shadow-sm border border-green-700"
             src={session?.user?.image || "/title.png"}
             alt="HSL Title"
             width={100}
@@ -34,6 +36,7 @@ export default function Navbar() {
           />
         </div>
       )}
+ 
     </nav>
   );
 }

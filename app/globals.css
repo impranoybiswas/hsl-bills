@@ -1,48 +1,31 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+.card {
+  @apply bg-[#152710] border border-green-800/50 rounded-md shadow flex flex-col;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dropCard {
+  @apply w-fit bg-[#14230f] border border-green-800/50 px-3 py-2 rounded-md shadow flex flex-col;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dropCard select {
+  @apply w-full focus:outline-none text-white text-sm;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-
-.select {
-  @apply border pl-2 py-2 rounded border-green-200 shadow w-full focus:outline-none text-white bg-green-700/50;
-}
-
-.select option {
-  @apply bg-green-200 text-green-800;
+.dropCard select option {
+  @apply bg-green-200 text-green-800 px-3 py-2;
 }
 
 
 thead {
-  @apply text-center bg-green-400;
+  @apply text-center bg-green-900 text-gray-100 text-sm;
 }
 
 thead th {
-  @apply border border-green-700 px-4 py-2 ;
+  @apply border border-[#14230f] p-2 ;
 }
 
 tbody td {
-  @apply border border-gray-300 px-4 py-2;
+  @apply border border-green-800/20 px-4 py-2;
 }
