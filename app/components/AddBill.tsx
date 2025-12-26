@@ -80,23 +80,17 @@ export default function AddBill({ userRole }: { userRole: string }) {
     <div className="w-full h-full relative z-100">
       <button
         onClick={() => setShowModal(true)}
-        className="bg-green-600 hover:bg-green-700 text-white p-2 pr-4 rounded-full transition flex items-center gap-2 cursor-pointer shadow-sm group"
+        className="bg-green-600 hover:bg-green-700 text-white size-14 rounded-full transition flex items-center justify-center text-3xl gap-2 cursor-pointer shadow-sm group"
       >
-        <span className="border border-white p-1 rounded-full group-hover:bg-green-800">
-          <HiOutlinePlus size={14} />
-        </span>
-        ADD BILL
+        <HiOutlinePlus />
       </button>
 
       {showModal && (
         <div
           onClick={() => setShowModal(false)}
-          className="fixed inset-0 bg-black/70 flex justify-center items-center z-100"
+          className="fixed inset-0 bg-black/60 flex justify-center items-center z-100"
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white text-gray-900 rounded-lg p-6 w-full max-w-md shadow-lg"
-          >
+          <div onClick={(e) => e.stopPropagation()} className="modalCard">
             <h2 className="text-lg font-semibold mb-4 text-center">
               Create New Bill
             </h2>
@@ -105,7 +99,6 @@ export default function AddBill({ userRole }: { userRole: string }) {
               <select
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="border px-3 py-2 rounded-md w-full"
               >
                 <option value="">Select Customer</option>
                 {uniqueCustomers.map((name) => (
@@ -119,7 +112,6 @@ export default function AddBill({ userRole }: { userRole: string }) {
                 <select
                   value={quantity}
                   onChange={(e) => setQuantity(Number(e.target.value))}
-                  className="border px-3 py-2 rounded-md w-full"
                 >
                   {[1, 2, 3, 4, 5].map((num) => (
                     <option key={num} value={num}>
@@ -128,12 +120,11 @@ export default function AddBill({ userRole }: { userRole: string }) {
                   ))}
                 </select>
               )}
-              <p className="text-sm text-center mt-3">Expiry Date</p>
               <input
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="border px-3 py-2 rounded-md w-full"
+                placeholder="Expiry Date"
               />
 
               {selectedCustomer && (
@@ -147,7 +138,7 @@ export default function AddBill({ userRole }: { userRole: string }) {
 
               <button
                 type="submit"
-                disabled={userRole !== "editor"}
+                disabled={userRole !== "editor" || !selectedCustomer}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Add & Download

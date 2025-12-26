@@ -7,7 +7,7 @@ import AddBill from "./AddBill";
 import { format } from "date-fns";
 import { GoCheckCircleFill } from "react-icons/go";
 import { MdRadioButtonChecked } from "react-icons/md";
-import EditBill from "./EditBill";
+import UpdateBill from "./UpdateBill";
 import { TbLoader2 } from "react-icons/tb";
 
 export default function BillsTable({ userRole }: { userRole: string }) {
@@ -47,7 +47,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
   );
 
   return (
-    <section className="w-full flex-1 px-4 md:px-8 lg:px-12 flex flex-col gap-5 py-5">
+    <section className="w-full h-dvh flex-1 px-4 md:px-8 lg:px-12 flex flex-col gap-5 pb-5 pt-20">
       {/* ===== States ==== */}
 
       <div className="grid grid-cols-3 gap-2 md:gap-3 lg:gap-5">
@@ -77,7 +77,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
         </div>
       </div>
 
-      <div className="card flex-1 flex flex-col overflow-hidden">
+      <div className="card flex flex-1 flex-col overflow-hidden">
         {/* ===== Filters ==== */}
         <div className="flex items-center justify-between gap-2 p-3">
           <div className="flex gap-2">
@@ -86,7 +86,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="">Statuses</option>
+                <option value="">Status</option>
                 <option value="paid">Paid</option>
                 <option value="pending">Pending</option>
               </select>
@@ -119,9 +119,9 @@ export default function BillsTable({ userRole }: { userRole: string }) {
 
         {/* ===== Table ==== */}
 
-        <div className="w-full h-100 overflow-y-scroll overflow-x-auto">
+        <div className="w-full h-full overflow-y-scroll overflow-x-auto">
           <table className="min-w-full whitespace-nowrap">
-            <thead className="sticky top-0 ">
+            <thead className="sticky -top-0.5">
               <tr>
                 <th>Invoice</th>
                 <th>Date</th>
@@ -159,11 +159,11 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                 </tr>
               </tbody>
             ) : (
-              <tbody className="text-gray-900">
+              <tbody>
                 {bills.map((bill) => (
                   <tr
                     key={bill._id}
-                    className="odd:bg-white/10 even:bg-white/15 hover:bg-white/20 text-sm text-green-50/80"
+                    className="odd:bg-white/5 even:bg-white/8 hover:bg-white/20 text-sm text-green-50/80"
                   >
                     <td className="px-4 py-2 text-center">{bill.invoice}</td>
                     <td className="px-4 py-2 text-center">
@@ -196,7 +196,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                       {bill.method || "—"}
                     </td>
                     <td className="py-2">
-                      <EditBill
+                      <UpdateBill
                         userRole={userRole}
                         bill={bill}
                         refetch={refetch}
@@ -210,7 +210,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
         </div>
 
         {/* ===== Floating Add Button ===== */}
-        <div className="fixed bottom-10 right-10">
+        <div className="fixed bottom-10 right-8 md:right-10">
           <AddBill userRole={userRole} />
         </div>
       </div>
