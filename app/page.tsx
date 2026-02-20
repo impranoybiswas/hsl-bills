@@ -12,7 +12,7 @@ export default function Home() {
   const { data: session, status } = useSession();
   const userRole = session?.user?.role || "user";
   return (
-    <main className="w-full h-dvh bg-[#0a0a0a] flex flex-col">
+    <main className="w-full h-dvh bg-[#152111] flex flex-col">
       <Navbar />
       {status === "loading" && (
         <div className="w-full h-100 flex items-center justify-center">

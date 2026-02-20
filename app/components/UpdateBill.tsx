@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { EditOutlined } from "@ant-design/icons";
-import { Modal, Form, Select, Button, Space } from "antd";
+import { FiEdit } from "react-icons/fi";
 import axiosSecure from "../libs/axiosSecure";
 
 export default function UpdateBill({
@@ -16,18 +15,23 @@ export default function UpdateBill({
   refetch: () => void;
 }) {
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
+  const [newStatus, setNewStatus] = useState("");
+  const [method, setMethod] = useState("");
 
-  const handleEditBill = async (values: { status: string; method?: string }) => {
+  const handleEditBill = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!bill._id) return;
 
-    setLoading(true);
+    if (!newStatus) {
+      toast.error("Please select a new status.");
+      return;
+    }
+
     try {
       await axiosSecure.patch("/api/bills", {
         id: bill._id,
-        status: values.status,
-        method: values.method,
+        status: newStatus,
+        method,
       });
 
       toast.success("Bill updated successfully!");
@@ -35,90 +39,80 @@ export default function UpdateBill({
       setShowModal(false);
     } catch (error) {
       console.error("❌ Error updating bill:", error);
-      toast.error("Failed to update bill.");
-    } finally {
-      setLoading(false);
+      toast.error("Failed to update bill. Check console for details.");
     }
   };
-
   return (
-    <>
-      <Button
-        type="link"
-        icon={<EditOutlined />}
-        onClick={() => {
-          setShowModal(true);
-          form.setFieldsValue({
-            status: bill.status || "pending",
-            method: bill.method || undefined,
-          });
-        }}
+    <div className="w-full h-full">
+      <button
+        onClick={() => setShowModal(true)}
+        className="flex items-center justify-center gap-2 cursor-pointer w-full h-full text-blue-600 hover:text-blue-800"
       >
-        Update
-      </Button>
+        <FiEdit /> Update
+      </button>
 
-      <Modal
-        title={`Edit Bill: ${bill.invoice}`}
-        open={showModal}
-        onCancel={() => setShowModal(false)}
-        footer={null}
-        centered
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleEditBill}
+      {showModal && (
+        <div
+          onClick={() => setShowModal(false)}
+          className="fixed inset-0 bg-black/60 flex justify-center items-center z-10"
         >
-          <Form.Item
-            name="status"
-            label="Status"
-            rules={[{ required: true, message: "Please select a status" }]}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="modalCard"
           >
-            <Select>
-              <Select.Option value="pending">Pending</Select.Option>
-              <Select.Option value="paid">Paid</Select.Option>
-            </Select>
-          </Form.Item>
+            <h2 className="text-xl font-semibold mb-4">
+              Edit Bill : {bill.invoice}
+            </h2>
+            <form onSubmit={handleEditBill} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Status
+                </label>
+                <select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                </select>
+              </div>
 
-          <Form.Item
-            name="method"
-            label="Payment Method"
-            rules={[
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (getFieldValue("status") === "paid" && !value) {
-                    return Promise.reject(new Error("Payment method is required for paid bills"));
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <Select placeholder="Select Method" allowClear>
-              <Select.Option value="cash">Cash</Select.Option>
-              <Select.Option value="online">Online</Select.Option>
-              <Select.Option value="check">Check</Select.Option>
-            </Select>
-          </Form.Item>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Payment Method
+                </label>
+                <select
 
-          <Space direction="horizontal" style={{ width: "100%", justifyContent: "flex-end", marginTop: 16 }}>
-            <Button onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              disabled={userRole !== "editor"}
-            >
-              Save Changes
-            </Button>
-          </Space>
-          {userRole !== "editor" && (
-            <div style={{ marginTop: 8, textAlign: "center", color: "#ff4d4f" }}>
-              Only Editor can update bills
-            </div>
-          )}
-        </Form>
-      </Modal>
-    </>
+                  value={method}
+                  onChange={(e) => setMethod(e.target.value)}
+                  
+                >
+                  <option value="">Select Method</option>
+                  <option value="cash">Cash</option>
+                  <option value="online">Online</option>
+                  <option value="check">Check</option>
+                </select>
+
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={userRole !== "editor" || method === ""}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

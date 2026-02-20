@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lato.variable} ${inter.variable} antialiased bg-[#0a0a0a]`}>
+      <body className={`${lato.variable} ${inter.variable} antialiased bg-[#152111]`}>
         <CustomLayout>{children}</CustomLayout>
       </body>
     </html>

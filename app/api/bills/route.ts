@@ -12,8 +12,6 @@ export async function GET(req: NextRequest) {
     const customer = searchParams.get("customer");
     const status = searchParams.get("status");
     const sortOrder = searchParams.get("sortOrder");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
 
     const query: Record<string, string> = {};
     if (customer) query.customer = customer;
@@ -23,59 +21,22 @@ export async function GET(req: NextRequest) {
 
     // ✅ Determine sort direction safely
     const sortDirection = sortOrder === "desc" ? -1 : 1;
-    const skip = (page - 1) * limit;
 
-    // Aggregation for global stats based on filter
-    const statsPipeline: object[] = [{ $match: query }];
-    statsPipeline.push({
-      $group: {
-        _id: null,
-        totalAmount: { $sum: { $toDouble: "$amount" } },
-        totalPaid: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "paid"] }, { $toDouble: "$amount" }, 0],
-          },
-        },
-        totalPending: {
-          $sum: {
-            $cond: [
-              { $eq: ["$status", "pending"] },
-              { $toDouble: "$amount" },
-              0,
-            ],
-          },
-        },
-        totalCount: { $sum: 1 },
-      },
-    });
+    const result = await collection
+      .find(query)
+      .sort({ date: sortDirection }) // ✅ cleaner key reference
+      .toArray();
 
-    const [bills, total, statsResult] = await Promise.all([
-      collection
-        .find(query)
-        .sort({ date: sortDirection })
-        .skip(skip)
-        .limit(limit)
-        .toArray(),
-      collection.countDocuments(query),
-      collection.aggregate(statsPipeline).toArray(),
-    ]);
-
-    const stats = statsResult[0] || {
-      totalAmount: 0,
-      totalPaid: 0,
-      totalPending: 0,
-      totalCount: 0,
-    };
-
-    return NextResponse.json({ bills, total, stats }, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("GET /api/bills error:", error);
     return NextResponse.json(
       { error: "Failed to fetch bills" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
+
 
 // =======================
 // POST → Add a New Bill
@@ -89,31 +50,22 @@ export async function POST(req: NextRequest) {
     if (!customer || !amount) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const collection = await getBillsCollection();
 
-    // Fetch the latest bills to determine the next invoice number
-    // We fetch a few to ensure we can find the numeric maximum in case of inconsistent sorting
-    const bills = await collection
+    // Fetch the latest bill to determine the next invoice number
+    const lastBill = await collection
       .find({})
-      .sort({ _id: -1 })
-      .limit(20)
+      .sort({ invoice: -1 })
+      .limit(1)
       .toArray();
 
-    // Determine next invoice number by finding the max numeric value
-    let nextInvoiceValue = 1001;
-    if (bills.length > 0) {
-      const invoiceNumbers = bills
-        .map((b) => Number(b.invoice))
-        .filter((n) => !isNaN(n));
-      if (invoiceNumbers.length > 0) {
-        nextInvoiceValue = Math.max(...invoiceNumbers) + 1;
-      }
-    }
-    const nextInvoice = String(nextInvoiceValue);
+    // Determine next invoice number
+    const nextInvoice =
+      lastBill.length > 0 ? String(Number(lastBill[0].invoice) + 1) : "1001"; // starting from 1001 if none exists
 
     // Prepare new bill data
     const newBill = {
@@ -132,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { insertedId: result.insertedId, ...newBill },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error("POST /api/bills error:", error);
@@ -151,7 +103,7 @@ export async function PATCH(req: NextRequest) {
     if (!id || !status) {
       return NextResponse.json(
         { error: "Bill ID and new status are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -164,7 +116,7 @@ export async function PATCH(req: NextRequest) {
           status,
           paidAt: status === "paid" ? new Date().toISOString() : null,
         },
-      },
+      }
     );
 
     if (result.matchedCount === 0) {
@@ -173,13 +125,13 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json(
       { message: "Bill status updated successfully" },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("PATCH /api/bills error:", error);
     return NextResponse.json(
       { error: "Failed to update bill status" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
