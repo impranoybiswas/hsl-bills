@@ -1,27 +1,52 @@
 "use client";
 import { signIn } from "next-auth/react";
-import { FcGoogle } from "react-icons/fc";
+import { GoogleOutlined } from "@ant-design/icons";
+import { Button, Typography, Space, Result, Card } from "antd";
+
+const { Title, Paragraph, Text } = Typography;
 
 export default function GuestView() {
   return (
-    <div className="w-full py-20 flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-semibold text-green-600 mb-6">
-        Welcome to HSL Bills
-      </h1>
-      <button
-        onClick={() => signIn("google")}
-        className="flex items-center gap-3 bg-white border border-gray-300 py-3 px-5 rounded-lg shadow hover:bg-gray-100 transition font-medium cursor-pointer"
+    <div className="w-full min-h-screen flex items-center justify-center p-4">
+      <Card
+        variant="borderless"
+        className="bg-white/5 max-w-2xl w-full"
+        style={{ padding: "24px" }}
       >
-        <FcGoogle className="w-6 h-6" />
-        Continue with Google
-      </button>
-      <p className="mt-3 text-green-400">Signed in to Show Bills and Add New Bills</p>
-      <p className="mt-1 text-sm text-gray-300">
-        Viewer can only see the list of Bills
-      </p>
-      <p className="mt-1 text-sm text-gray-300">
-        Editor can add new Bills and update existing Bills
-      </p>
+        <Result
+          status="info"
+          title={
+            <Title level={2} style={{ color: "#22c55e", margin: 0 }}>
+              Welcome to HSL Bills
+            </Title>
+          }
+          subTitle={
+            <Text style={{ color: "rgba(255, 255, 255, 0.65)" }}>
+              Manage your company bills efficiently with our modern dashboard.
+            </Text>
+          }
+          extra={[
+            <Space direction="vertical" size="large" key="actions">
+              <Button
+                type="primary"
+                size="large"
+                icon={<GoogleOutlined />}
+                onClick={() => signIn("google")}
+                style={{ height: 50, padding: "0 40px" }}
+              >
+                Continue with Google
+              </Button>
+              <div style={{ textAlign: "center" }}>
+                <Paragraph style={{ color: "rgba(255, 255, 255, 0.45)" }}>
+                  <Text type="success" strong>Viewer:</Text> View billing history & status
+                  <br />
+                  <Text type="success" strong>Editor:</Text> Create and manage bills
+                </Paragraph>
+              </div>
+            </Space>,
+          ]}
+        />
+      </Card>
     </div>
   );
 }

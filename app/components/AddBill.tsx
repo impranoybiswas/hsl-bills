@@ -1,57 +1,63 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useCustomers } from "../hooks/useCustomers";
 import axiosSecure from "../libs/axiosSecure";
 import toast from "react-hot-toast";
 import { generatePDF } from "../libs/generatePDF";
-import { HiOutlinePlus } from "react-icons/hi2";
+import {
+  Modal,
+  Form,
+  Select,
+  InputNumber,
+  DatePicker,
+  Button,
+  FloatButton,
+  Typography,
+  Space,
+} from "antd";
+import { PlusOutlined, FilePdfOutlined } from "@ant-design/icons";
+
+const { Text } = Typography;
 
 export default function AddBill({ userRole }: { userRole: string }) {
-  const [customerName, setCustomerName] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [expiryDate, setExpiryDate] = useState("");
-  const [isMonthly, setIsMonthly] = useState(false);
+  const [form] = Form.useForm();
   const [showModal, setShowModal] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const { data: customers } = useCustomers();
 
-  // Create unique customer list for dropdown
+  // Selected customer details from form
+  const customerName = Form.useWatch("customerName", form);
+  const quantity = Form.useWatch("quantity", form) || 1;
+
   const uniqueCustomers = useMemo(() => {
     if (!customers) return [];
     const names = customers.map((c) => c.name);
     return Array.from(new Set(names));
   }, [customers]);
 
-  // Currently selected customer
   const selectedCustomer = useMemo(() => {
     if (!customers || !customerName) return null;
     return customers.find((c) => c.name === customerName) || null;
   }, [customers, customerName]);
 
-  useEffect(() => {
-    if (selectedCustomer) {
-      setTimeout(() => {
-        setIsMonthly(selectedCustomer.isMonthly);
-        setQuantity(1);
-      }, 0);
-    }
-  }, [selectedCustomer]);
+  const totalAmount = useMemo(() => {
+    if (!selectedCustomer) return 0;
+    return selectedCustomer.price * quantity;
+  }, [selectedCustomer, quantity]);
 
-  // Handle Bill Creation
-  const handleAddBill = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleAddBill = async (values: { quantity: number; expiryDate?: { format: (fmt: string) => string } | null }) => {
     if (!selectedCustomer) {
-      toast.error("Please select a customer first.");
+      toast.error("Please select a customer.");
       return;
     }
 
+    setLoading(true);
     try {
       const response = await axiosSecure.post("/api/bills", {
         customer: selectedCustomer.name,
-        quantity: selectedCustomer.isMonthly ? "monthly" : quantity,
-        amount: selectedCustomer.price * quantity,
+        quantity: selectedCustomer.isMonthly ? "monthly" : values.quantity,
+        amount: totalAmount,
       });
 
       toast.success(
@@ -62,96 +68,102 @@ export default function AddBill({ userRole }: { userRole: string }) {
         invoice: response.data.invoice,
         date: new Date().toISOString(),
         selectedCustomer,
-        quantity,
-        expiryDate,
+        quantity: values.quantity,
+        expiryDate: values.expiryDate ? values.expiryDate.format("YYYY-MM-DD") : "",
       });
 
       setShowModal(false);
-      setCustomerName("");
-      setQuantity(1);
-      setExpiryDate("");
+      form.resetFields();
     } catch (error) {
       console.error("Error adding bill:", error);
-      toast.error("Failed to add bill. Check console for details.");
+      toast.error("Failed to add bill.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full h-full relative z-100">
-      <button
+    <>
+      <FloatButton
+        type="primary"
+        icon={<PlusOutlined />}
+        style={{ right: 24, bottom: 24, width: 64, height: 64 }}
         onClick={() => setShowModal(true)}
-        className="bg-green-600 hover:bg-green-700 text-white size-14 rounded-full transition flex items-center justify-center text-3xl gap-2 cursor-pointer shadow-sm group"
+        tooltip={<div>Create New Bill</div>}
+      />
+
+      <Modal
+        title="Create New Bill"
+        open={showModal}
+        onCancel={() => setShowModal(false)}
+        footer={null}
+        centered
       >
-        <HiOutlinePlus />
-      </button>
-
-      {showModal && (
-        <div
-          onClick={() => setShowModal(false)}
-          className="fixed inset-0 bg-black/60 flex justify-center items-center z-100"
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleAddBill}
+          initialValues={{ quantity: 1 }}
         >
-          <div onClick={(e) => e.stopPropagation()} className="modalCard">
-            <h2 className="text-lg font-semibold mb-4 text-center">
-              Create New Bill
-            </h2>
+          <Form.Item
+            name="customerName"
+            label="Select Customer"
+            rules={[{ required: true, message: "Please select a customer" }]}
+          >
+            <Select
+              showSearch
+              placeholder="Search or Select Customer"
+              onChange={() => form.setFieldValue("quantity", 1)}
+            >
+              {uniqueCustomers.map((name) => (
+                <Select.Option key={name} value={name}>
+                  {name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-            <form onSubmit={handleAddBill} className="flex flex-col gap-4">
-              <select
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              >
-                <option value="">Select Customer</option>
-                {uniqueCustomers.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
+          {selectedCustomer && !selectedCustomer.isMonthly && (
+            <Form.Item name="quantity" label="Quantity">
+              <InputNumber min={1} max={100} style={{ width: "100%" }} />
+            </Form.Item>
+          )}
 
-              {!isMonthly && (
-                <select
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                >
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <input
-                type="date"
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                placeholder="Expiry Date"
-              />
+          <Form.Item name="expiryDate" label="Expiry Date">
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
 
-              {selectedCustomer && (
-                <p className="text-gray-700 font-medium text-center">
-                  Total Amount:{" "}
-                  <span className="text-green-600 font-semibold">
-                    ৳{selectedCustomer.price * quantity}
-                  </span>
-                </p>
-              )}
+          {selectedCustomer && (
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <Text strong style={{ fontSize: 16 }}>
+                Total Amount:{" "}
+                <Text type="success" style={{ fontSize: 18 }}>
+                  ৳{totalAmount.toLocaleString()}
+                </Text>
+              </Text>
+            </div>
+          )}
 
-              <button
-                type="submit"
-                disabled={userRole !== "editor" || !selectedCustomer}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Add & Download
-              </button>
-            </form>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<FilePdfOutlined />}
+              block
+              size="large"
+              loading={loading}
+              disabled={userRole !== "editor" || !selectedCustomer}
+            >
+              Add & Download PDF
+            </Button>
             {userRole !== "editor" && (
-              <p className="mt-3 text-sm text-red-500 text-center">
+              <Text type="danger" style={{ display: "block", textAlign: "center" }}>
                 Only Editor can add new Bills
-              </p>
+              </Text>
             )}
-          </div>
-        </div>
-      )}
-    </div>
+          </Space>
+        </Form>
+      </Modal>
+    </>
   );
 }

@@ -5,24 +5,115 @@ import { useBills } from "../hooks/useBills";
 import { useCustomers } from "../hooks/useCustomers";
 import AddBill from "./AddBill";
 import { format } from "date-fns";
-import { GoCheckCircleFill } from "react-icons/go";
-import { MdRadioButtonChecked } from "react-icons/md";
 import UpdateBill from "./UpdateBill";
-import { TbLoader2 } from "react-icons/tb";
+import {
+  Table,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Select,
+  Tag,
+  Space,
+} from "antd";
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
 
 export default function BillsTable({ userRole }: { userRole: string }) {
   const [status, setStatus] = useState("");
   const [customer, setCustomer] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
 
   const {
-    data: bills = [],
+    data,
     isLoading,
-    isError,
     refetch,
-  } = useBills({ status, customer, sortOrder });
+  } = useBills({ status, customer, sortOrder, page, limit: pageSize });
+
+  const bills = useMemo(() => data?.bills || [], [data?.bills]);
+  const totalItems = data?.total || 0;
+  const stats = data?.stats;
 
   const { data: customers } = useCustomers();
+
+  const columns: ColumnsType<Bill> = [
+    {
+      title: "Invoice",
+      dataIndex: "invoice",
+      key: "invoice",
+      align: "center",
+    },
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date) => format(new Date(date), "dd MMM yyyy"),
+      align: "center",
+      className: "whitespace-nowrap",
+    },
+    {
+      title: "Customer",
+      dataIndex: "customer",
+      key: "customer",
+      className: "capitalize whitespace-nowrap",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      align: "center",
+      className: "capitalize",
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      align: "right",
+      render: (amount) => `৳${Number(amount).toLocaleString()}`,
+      className: "font-semibold",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag
+          icon={status === "paid" ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+          color={status === "paid" ? "success" : "warning"}
+        >
+          {status?.toUpperCase()}
+        </Tag>
+      ),
+    },
+    {
+      title: "Paid At",
+      dataIndex: "paidAt",
+      key: "paidAt",
+      align: "center",
+      render: (paidAt, record) =>
+        record.status === "paid" ? format(new Date(paidAt), "dd MMM yyyy") : "—",
+    },
+    {
+      title: "Method",
+      dataIndex: "method",
+      key: "method",
+      align: "center",
+      render: (method) => method || "—",
+      className: "capitalize",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <UpdateBill userRole={userRole} bill={record} refetch={refetch} />
+      ),
+    },
+  ];
 
   const uniqueCustomers = useMemo(() => {
     if (!customers) return [];
@@ -30,190 +121,126 @@ export default function BillsTable({ userRole }: { userRole: string }) {
     return Array.from(new Set(names));
   }, [customers]);
 
-  const totalPaid = useMemo(
-    () =>
-      bills
-        .filter((b) => b.status === "paid")
-        .reduce((sum, b) => sum + b.amount, 0),
-    [bills]
-  );
-
-  const totalPending = useMemo(
-    () =>
-      bills
-        .filter((b) => b.status === "pending")
-        .reduce((sum, b) => sum + b.amount, 0),
-    [bills]
-  );
-
   return (
-    <section className="w-full h-dvh flex-1 px-4 md:px-8 lg:px-12 flex flex-col gap-5 pb-5 pt-20">
-      {/* ===== States ==== */}
+    <div className="w-full h-dvh p-4 md:p-6 bg-[#0a0a0a] overflow-hidden flex flex-col">
+      <Space orientation="vertical" size="large" style={{ width: "100%", height: "100%", display: "flex" }}>
+        {/* Statistics Cards */}
+        <Row gutter={[12, 12]}>
+          <Col xs={8} sm={8}>
+            <Card variant="borderless" className="bg-[#121212] border border-white/5 shadow-xl transition-all">
+              <Statistic
+                title={<span className="text-gray-400 font-medium">Total Bills</span>}
+                value={stats?.totalCount || 0}
+                styles={{ content: { color: "#3b82f6" } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={8} sm={8}>
+            <Card variant="borderless" className="bg-[#121212] border border-white/5 shadow-xl transition-all">
+              <Statistic
+                title={<span className="text-gray-400 font-medium">Paid</span>}
+                value={stats?.totalPaid || 0}
+                precision={2}
+                prefix="৳"
+                styles={{ content: { color: "#22c55e" } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={8} sm={8}>
+            <Card variant="borderless" className="bg-[#121212] border border-white/5 shadow-xl transition-all">
+              <Statistic
+                title={<span className="text-gray-400 font-medium">Pending</span>}
+                value={stats?.totalPending || 0}
+                precision={2}
+                prefix="৳"
+                styles={{ content: { color: "#f97316" } }}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-      <div className="grid grid-cols-3 gap-2 md:gap-3 lg:gap-5">
-        <div className="card p-2 md:p-4">
-          <span className="text-white text-xs md:text-sm">Total Bills</span>
-          <strong className="text-blue-500 font-bold text-lg md:text-2xl lg:text-3xl">
-            {bills.length}
-          </strong>
-        </div>
-
-        <div className="card p-2 md:p-4">
-          <span className="text-white text-xs md:text-sm">
-            <span className="hidden md:inline-block">Total</span> Paid
-          </span>
-          <strong className="text-green-500 font-bold md:text-2xl lg:text-3xl">
-            ৳{totalPaid.toLocaleString()}
-          </strong>
-        </div>
-
-        <div className="card p-2 md:p-4">
-          <span className="text-white text-xs md:text-sm">
-            <span className="hidden md:inline-block">Total</span> Pending
-          </span>
-          <strong className="text-orange-500 font-bold md:text-2xl lg:text-3xl">
-            ৳{totalPending.toLocaleString()}
-          </strong>
-        </div>
-      </div>
-
-      <div className="card flex flex-1 flex-col overflow-hidden">
-        {/* ===== Filters ==== */}
-        <div className="flex items-center justify-between gap-2 p-3">
-          <div className="flex gap-2">
-            <div className="dropCard">
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="">Status</option>
-                <option value="paid">Paid</option>
-                <option value="pending">Pending</option>
-              </select>
+        <Card variant="borderless" className="bg-[#121212] border border-white/5 shadow-xl flex-1 flex flex-col min-h-0">
+          {/* Filters Area */}
+          <div className="flex flex-nowrap items-center justify-between gap-3 mb-4">
+            <div className="flex flex-nowrap w-full md:max-w-md items-center gap-2 flex-1 min-w-0">
+              <Select
+                placeholder="Status"
+                style={{ width: "40%" }}
+                allowClear
+                onChange={(value) => {
+                  setStatus(value);
+                  setPage(1);
+                }}
+                key="status"
+                options={
+                  [
+                    {
+                      value: "paid",
+                      label: "Paid",
+                    },
+                    {
+                      value: "pending",
+                      label: "Pending",
+                    },
+                  ]
+                }
+              />
+              <Select
+                placeholder="Customers"
+                style={{ width: "60%" }}
+                showSearch
+                allowClear
+                onChange={(value) => {
+                  setCustomer(value);
+                  setPage(1);
+                }}
+                options={uniqueCustomers.map((name: string) => ({
+                  value: name,
+                  label: name,
+                }))}
+              />
             </div>
-            <div className="dropCard">
-              <select
-                value={customer}
-                onChange={(e) => setCustomer(e.target.value)}
-              >
-                <option value="">Customers</option>
-                {uniqueCustomers.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="dropCard">
-            <select
+
+            <Select
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-              className="select"
-            >
-              <option value="desc">Descending</option>
-              <option value="asc">Ascending</option>
-            </select>
+              style={{ width: "130px", flexShrink: 0 }}
+              onChange={(value) => setSortOrder(value)}
+              options={[
+                {
+                  value: "desc",
+                  label: "Newest First",
+                },
+                {
+                  value: "asc",
+                  label: "Oldest First",
+                },
+              ]}
+            />
           </div>
-        </div>
 
-        {/* ===== Table ==== */}
+          {/* Bills Table */}
+          <Table
+            columns={columns}
+            dataSource={bills}
+            rowKey="_id"
+            loading={isLoading}
+            pagination={{
+              current: page,
+              pageSize: pageSize,
+              total: totalItems,
+              onChange: (p) => setPage(p),
+              showSizeChanger: false,
+              placement: ["bottomCenter"],
+              styles: { item: { borderRadius: 999, backgroundColor: "#121212" } }
+            }}
+            scroll={{ x: 1000, y: "calc(100vh - 420px)" }}
+            sticky
+            className="custom-antd-table flex-1 min-h-0"
+          />
+        </Card>
+      </Space>
 
-        <div className="w-full h-full overflow-y-scroll overflow-x-auto">
-          <table className="min-w-full whitespace-nowrap">
-            <thead className="sticky -top-0.5">
-              <tr>
-                <th>Invoice</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Quantity</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Paid At</th>
-                <th>Method</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-
-            {isLoading ? (
-              <tbody>
-                <tr>
-                  <td colSpan={9}>
-                    <div className="w-full h-50 flex items-center justify-center">
-                      <TbLoader2
-                        size={50}
-                        className="animate-spin text-green-500"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            ) : isError ? (
-              <tbody>
-                <tr>
-                  <td colSpan={9}>
-                    <div className="w-full h-50 flex items-center justify-center text-green-500">
-                      Failed to load bills.
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                {bills.map((bill) => (
-                  <tr
-                    key={bill._id}
-                    className="odd:bg-white/5 even:bg-white/8 hover:bg-white/20 text-sm text-green-50/80"
-                  >
-                    <td className="px-4 py-2 text-center">{bill.invoice}</td>
-                    <td className="px-4 py-2 text-center">
-                      {format(bill.date, "dd MMM yyyy")}
-                    </td>
-                    <td className="px-4 py-2">{bill.customer}</td>
-                    <td className="px-4 py-2 capitalize text-center">
-                      {bill.quantity}
-                    </td>
-                    <td className="px-4 py-2 text-right font-semibold">
-                      {bill.amount.toLocaleString()}
-                    </td>
-                    <td>
-                      {bill.status === "paid" ? (
-                        <span className="flex items-center gap-2 text-green-600">
-                          <GoCheckCircleFill /> PAID
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-2 text-orange-600">
-                          <MdRadioButtonChecked /> PENDING
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      {bill.status === "paid"
-                        ? format(bill.paidAt || new Date(), "dd MMM yyyy")
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-2 uppercase text-center">
-                      {bill.method || "—"}
-                    </td>
-                    <td className="py-2">
-                      <UpdateBill
-                        userRole={userRole}
-                        bill={bill}
-                        refetch={refetch}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
-        </div>
-
-        {/* ===== Floating Add Button ===== */}
-        <div className="fixed bottom-10 right-8 md:right-10">
-          <AddBill userRole={userRole} />
-        </div>
-      </div>
-    </section>
+      <AddBill userRole={userRole} />
+    </div>
   );
 }

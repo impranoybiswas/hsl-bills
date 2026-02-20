@@ -1,40 +1,63 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { Layout, Button, Avatar, Spin, Space } from "antd";
+import { LogoutOutlined, LoadingOutlined } from "@ant-design/icons";
+
+const { Header } = Layout;
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+
   return (
-    <nav className="h-15 w-full border-b border-green-800/50 shadow flex items-center justify-between px-4 md:px-8 lg:px-12 fixed bg-[#152111]">
-      <Image
-        className="h-8 w-fit"
-        src="/title.png"
-        alt="HSL Title"
-        width={100}
-        height={100}
-      />
-      {status === "loading" && (
-        <AiOutlineLoading3Quarters size={20} className="animate-spin" />
-      )}
-      {status === "authenticated" && (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => signOut()}
-            className="text-sm h-8 px-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium transition shadow-sm cursor-pointer flex items-center gap-2"
-          >
-            Log out
-          </button>
-          <Image
-            className="size-8 rounded-full object-cover shadow-sm border border-green-700"
-            src={session?.user?.image || "/title.png"}
-            alt="HSL Title"
-            width={100}
-            height={100}
-          />
-        </div>
-      )}
- 
-    </nav>
+    <Header
+      style={{
+        position: "sticky",
+        zIndex: 1000,
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 24px",
+        background: "rgba(10, 10, 10, 0.8)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+        height: "64px",
+      }}
+    >
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <Image
+          className="h-8 w-fit"
+          src="/title.png"
+          alt="HSL Title"
+          width={120}
+          height={40}
+        />
+      </div>
+
+      <Space size="middle">
+        {status === "loading" && (
+          <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+        )}
+        {status === "authenticated" && (
+          <>
+            <Button
+              type="primary"
+              danger
+              icon={<LogoutOutlined />}
+              onClick={() => signOut()}
+              shape="round"
+            >
+              Log out
+            </Button>
+            <Avatar
+              src={session?.user?.image || "/title.png"}
+              size="large"
+              style={{ border: "1px solid #3b82f6" }}
+            />
+          </>
+        )}
+      </Space>
+    </Header>
   );
 }
