@@ -80,7 +80,7 @@ export default function AddBill({ userRole }: { userRole: string }) {
     <div className="w-full h-full relative z-100">
       <button
         onClick={() => setShowModal(true)}
-        className="bg-green-600 hover:bg-green-700 text-white size-14 rounded-full transition flex items-center justify-center text-3xl gap-2 cursor-pointer shadow-sm group"
+        className="bg-green-600 hover:bg-green-700 text-white size-12 rounded-full transition flex items-center justify-center text-2xl gap-2 cursor-pointer shadow-md group"
       >
         <HiOutlinePlus />
       </button>

@@ -44,15 +44,15 @@ export default function BillsTable({ userRole }: { userRole: string }) {
     <section className="w-full h-dvh flex-1 px-4 md:px-8 lg:px-12 flex flex-col gap-5 pb-5 pt-20">
       {/* ===== States ==== */}
 
-      <div className="grid grid-cols-3 gap-2 md:gap-3 lg:gap-5">
-        <div className="card p-2 md:p-4">
+      <div className="grid grid-cols-8 gap-2 md:gap-3 lg:gap-5">
+        <div className="card p-2 md:p-4 col-span-2">
           <span className="text-white text-xs md:text-sm">Total Bills</span>
           <strong className="text-blue-500 font-bold text-lg md:text-2xl lg:text-3xl">
             {totalBills}
           </strong>
         </div>
 
-        <div className="card p-2 md:p-4">
+        <div className="card p-2 md:p-4 col-span-3">
           <span className="text-white text-xs md:text-sm">
             <span className="hidden md:inline-block">Total</span> Paid
           </span>
@@ -61,7 +61,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
           </strong>
         </div>
 
-        <div className="card p-2 md:p-4">
+        <div className="card p-2 md:p-4 col-span-3">
           <span className="text-white text-xs md:text-sm">
             <span className="hidden md:inline-block">Total</span> Pending
           </span>
@@ -236,7 +236,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
         )}
 
         {/* ===== Floating Add Button ===== */}
-        <div className="fixed bottom-10 right-8 md:right-10">
+        <div className="fixed bottom-18 md:bottom-8 right-7 md:right-16">
           <AddBill userRole={userRole} />
         </div>
       </div>
