@@ -14,13 +14,19 @@ export default function BillsTable({ userRole }: { userRole: string }) {
   const [status, setStatus] = useState("");
   const [customer, setCustomer] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const limit = 50;
 
   const {
-    data: bills = [],
+    data,
     isLoading,
     isError,
     refetch,
-  } = useBills({ status, customer, sortOrder });
+  } = useBills({ status, customer, sortOrder, page, limit });
+
+  const bills = data?.bills || [];
+  const stats = data?.stats;
+  const pagination = data?.pagination;
 
   const { data: customers } = useCustomers();
 
@@ -30,21 +36,9 @@ export default function BillsTable({ userRole }: { userRole: string }) {
     return Array.from(new Set(names));
   }, [customers]);
 
-  const totalPaid = useMemo(
-    () =>
-      bills
-        .filter((b) => b.status === "paid")
-        .reduce((sum, b) => sum + b.amount, 0),
-    [bills]
-  );
-
-  const totalPending = useMemo(
-    () =>
-      bills
-        .filter((b) => b.status === "pending")
-        .reduce((sum, b) => sum + b.amount, 0),
-    [bills]
-  );
+  const totalPaid = stats?.totalPaid || 0;
+  const totalPending = stats?.totalPending || 0;
+  const totalBills = stats?.totalCount || 0;
 
   return (
     <section className="w-full h-dvh flex-1 px-4 md:px-8 lg:px-12 flex flex-col gap-5 pb-5 pt-20">
@@ -54,7 +48,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
         <div className="card p-2 md:p-4">
           <span className="text-white text-xs md:text-sm">Total Bills</span>
           <strong className="text-blue-500 font-bold text-lg md:text-2xl lg:text-3xl">
-            {bills.length}
+            {totalBills}
           </strong>
         </div>
 
@@ -84,7 +78,10 @@ export default function BillsTable({ userRole }: { userRole: string }) {
             <div className="dropCard">
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPage(1);
+                }}
               >
                 <option value="">Status</option>
                 <option value="paid">Paid</option>
@@ -94,7 +91,10 @@ export default function BillsTable({ userRole }: { userRole: string }) {
             <div className="dropCard">
               <select
                 value={customer}
-                onChange={(e) => setCustomer(e.target.value)}
+                onChange={(e) => {
+                  setCustomer(e.target.value);
+                  setPage(1);
+                }}
               >
                 <option value="">Customers</option>
                 {uniqueCustomers.map((name) => (
@@ -108,7 +108,10 @@ export default function BillsTable({ userRole }: { userRole: string }) {
           <div className="dropCard">
             <select
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+              onChange={(e) => {
+                setSortOrder(e.target.value as "asc" | "desc");
+                setPage(1);
+              }}
               className="select"
             >
               <option value="desc">Descending</option>
@@ -208,6 +211,29 @@ export default function BillsTable({ userRole }: { userRole: string }) {
             )}
           </table>
         </div>
+
+        {/* ===== Pagination ==== */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 p-4 border-t border-white/10">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-lg text-white text-sm transition-colors"
+            >
+              Previous
+            </button>
+            <span className="text-white text-sm">
+              Page {page} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
+              disabled={page === pagination.totalPages}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-lg text-white text-sm transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        )}
 
         {/* ===== Floating Add Button ===== */}
         <div className="fixed bottom-10 right-8 md:right-10">
