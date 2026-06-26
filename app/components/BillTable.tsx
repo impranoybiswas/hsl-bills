@@ -17,12 +17,13 @@ export default function BillsTable({ userRole }: { userRole: string }) {
   const [page, setPage] = useState(1);
   const limit = 50;
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useBills({ status, customer, sortOrder, page, limit });
+  const { data, isLoading, isError, refetch } = useBills({
+    status,
+    customer,
+    sortOrder,
+    page,
+    limit,
+  });
 
   const bills = data?.bills || [];
   const stats = data?.stats;
@@ -41,34 +42,28 @@ export default function BillsTable({ userRole }: { userRole: string }) {
   const totalBills = stats?.totalCount || 0;
 
   return (
-    <section className="w-full h-dvh flex-1 px-4 md:px-8 lg:px-12 flex flex-col gap-5 pb-5 pt-20">
+    <section className="w-full h-[calc(100vh-64px)] flex-1 flex flex-col gap-5 py-5 px-4 md:px-6 lg:px-10">
       {/* ===== States ==== */}
 
-      <div className="grid grid-cols-8 gap-2 md:gap-3 lg:gap-5">
-        <div className="card p-2 md:p-4 col-span-2">
-          <span className="text-white text-xs md:text-sm">Total Bills</span>
-          <strong className="text-blue-500 font-bold text-lg md:text-2xl lg:text-3xl">
-            {totalBills}
-          </strong>
-        </div>
-
-        <div className="card p-2 md:p-4 col-span-3">
-          <span className="text-white text-xs md:text-sm">
-            <span className="hidden md:inline-block">Total</span> Paid
-          </span>
-          <strong className="text-green-500 font-bold md:text-2xl lg:text-3xl">
-            ৳{totalPaid.toLocaleString()}
-          </strong>
-        </div>
-
-        <div className="card p-2 md:p-4 col-span-3">
-          <span className="text-white text-xs md:text-sm">
-            <span className="hidden md:inline-block">Total</span> Pending
-          </span>
-          <strong className="text-orange-500 font-bold md:text-2xl lg:text-3xl">
-            ৳{totalPending.toLocaleString()}
-          </strong>
-        </div>
+      <div className="grid grid-cols-8 gap-2 md:gap-3 lg:gap-5 w-full">
+        <StateCard
+          title="Bills"
+          value={totalBills.toString()}
+          color="text-blue-500"
+          className="col-span-2"
+        />
+        <StateCard
+          title="Paid"
+          value={totalPaid.toLocaleString()}
+          color="text-green-500"
+          className="col-span-3"
+        />
+        <StateCard
+          title="Pending"
+          value={totalPending.toLocaleString()}
+          color="text-orange-500"
+          className="col-span-3"
+        />
       </div>
 
       <div className="card flex flex-1 flex-col overflow-hidden">
@@ -166,7 +161,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                 {bills.map((bill) => (
                   <tr
                     key={bill._id}
-                    className="odd:bg-white/5 even:bg-white/8 hover:bg-white/20 text-sm text-green-50/80"
+                    className="odd:bg-white/6 even:bg-white/8 hover:bg-white/10 text-sm text-green-50/80"
                   >
                     <td className="px-4 py-2 text-center">{bill.invoice}</td>
                     <td className="px-4 py-2 text-center">
@@ -181,11 +176,11 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                     </td>
                     <td>
                       {bill.status === "paid" ? (
-                        <span className="flex items-center gap-2 text-green-600">
+                        <span className="flex items-center gap-2 bg-green-600 text-white rounded-full px-2 py-1 text-xs w-fit">
                           <GoCheckCircleFill /> PAID
                         </span>
                       ) : (
-                        <span className="flex items-center gap-2 text-orange-600">
+                        <span className="flex items-center gap-2 bg-orange-600 text-white rounded-full px-2 py-1 text-xs w-fit">
                           <MdRadioButtonChecked /> PENDING
                         </span>
                       )}
@@ -226,7 +221,9 @@ export default function BillsTable({ userRole }: { userRole: string }) {
               Page {page} of {pagination.totalPages}
             </span>
             <button
-              onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
+              onClick={() =>
+                setPage((prev) => Math.min(prev + 1, pagination.totalPages))
+              }
               disabled={page === pagination.totalPages}
               className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-lg text-white text-sm transition-colors"
             >
@@ -243,3 +240,29 @@ export default function BillsTable({ userRole }: { userRole: string }) {
     </section>
   );
 }
+
+const StateCard = ({
+  title,
+  value,
+  color,
+  className,
+}: {
+  title: string;
+  value: string;
+  color: string;
+  className: string;
+}) => {
+  return (
+    <div className={`card p-2 md:p-4 ${className}`}>
+      <span className="text-white text-xs md:text-sm">
+        <span className="hidden md:inline-block pr-1">Total</span>
+        {title}
+      </span>
+      <strong
+        className={`${color} font-bold text-lg md:text-2xl lg:text-3xl block`}
+      >
+        {value}
+      </strong>
+    </div>
+  );
+};

@@ -15,8 +15,8 @@ export default function UpdateBill({
   refetch: () => void;
 }) {
   const [showModal, setShowModal] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
-  const [method, setMethod] = useState("");
+  const [newStatus, setNewStatus] = useState(bill.status);
+  const [method, setMethod] = useState(bill.method);
 
   const handleEditBill = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +46,7 @@ export default function UpdateBill({
     <div className="w-full h-full">
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center justify-center gap-2 cursor-pointer w-full h-full text-blue-600 hover:text-blue-800"
+        className="flex items-center justify-center gap-2 cursor-pointer w-full h-full bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-2 text-xs"
       >
         <FiEdit /> Update
       </button>
