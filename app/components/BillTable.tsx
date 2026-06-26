@@ -9,8 +9,11 @@ import { GoCheckCircleFill } from "react-icons/go";
 import { MdRadioButtonChecked } from "react-icons/md";
 import UpdateBill from "./UpdateBill";
 import { TbLoader2 } from "react-icons/tb";
+import { BsEye } from "react-icons/bs";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 
 export default function BillsTable({ userRole }: { userRole: string }) {
+  const [showStates, setShowStates] = useState(true);
   const [status, setStatus] = useState("");
   const [customer, setCustomer] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -43,9 +46,10 @@ export default function BillsTable({ userRole }: { userRole: string }) {
 
   return (
     <section className="w-full h-dvh flex-1 flex flex-col gap-5 pb-5 pt-19 px-4 md:px-6 lg:px-10">
-      {/* ===== States ==== */}
 
-      <div className="grid grid-cols-8 gap-2 md:gap-3 lg:gap-5 w-full">
+      <button onClick={() => setShowStates(!showStates)} className="size-8 rounded-full bg-green-700 text-white font-medium transition shadow-sm cursor-pointer flex items-center justify-center gap-2 absolute top-3 right-36 md:right-40 lg:right-44 z-10">{showStates ? <HiEyeOff/> : <HiEye />}</button>
+      {/* ===== States ==== */}
+      <div className={`grid-cols-8 gap-2 md:gap-3 lg:gap-5 w-full ${showStates ? "grid" : "hidden"} transition-all duration-500 ease-in-out`}>
         <StateCard
           title="Bills"
           value={totalBills.toString()}
