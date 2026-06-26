@@ -6,7 +6,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 export default function Navbar() {
   const { data: session, status } = useSession();
   return (
-    <nav className="h-[64px] w-full px-4 md:px-6 lg:px-10 border-b border-green-700/50 shadow flex items-center justify-between bg-black/30">
+    <nav className="h-14 w-full px-4 md:px-6 lg:px-10 border-b border-green-700/50 shadow flex items-center justify-between bg-black/30 fixed">
       <Image
         className="h-8 w-fit"
         src="/title.png"
