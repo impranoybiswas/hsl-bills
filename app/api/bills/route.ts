@@ -1,6 +1,5 @@
-import { getBillsCollection } from "@/app/libs/collection";
 import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { getBills, createBill, updateBill } from "@/app/libs/googleSheet";
 
 // =======================
 // GET → Fetch Bills
@@ -11,59 +10,59 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const customer = searchParams.get("customer");
     const status = searchParams.get("status");
-    const sortOrder = searchParams.get("sortOrder");
+    const sortOrder = searchParams.get("sortOrder") as "asc" | "desc";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
 
-    const query: Record<string, string> = {};
-    if (customer) query.customer = customer;
-    if (status) query.status = status;
+    const allBills = await getBills();
 
-    const collection = await getBillsCollection();
+    // Compute stats BEFORE filtering so they always reflect the full dataset
+    const totalCount = allBills.length;
+    const totalPaid = allBills
+      .filter((b) => b.status === "paid")
+      .reduce((acc, curr) => acc + curr.amount, 0);
+    const totalPending = allBills
+      .filter((b) => b.status === "pending")
+      .reduce((acc, curr) => acc + curr.amount, 0);
 
-    // ✅ Determine sort direction safely
+    // Filter for display
+    let filtered = [...allBills];
+    if (customer) {
+      filtered = filtered.filter((b) => b.customer === customer);
+    }
+    if (status) {
+      filtered = filtered.filter(
+        (b) => (b.status || "").toLowerCase() === status.toLowerCase(),
+      );
+    }
+
+    // Sort
     const sortDirection = sortOrder === "desc" ? -1 : 1;
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      if (isNaN(dateA) || isNaN(dateB)) return 0;
+      return (dateA - dateB) * sortDirection;
+    });
 
-    // Fetch total count for pagination and stats
-    const totalCount = await collection.countDocuments(query);
-
-    // Fetch stats (Total Paid and Total Pending amounts)
-    const statsResult = await collection
-      .aggregate([
-        { $match: query },
-        {
-          $group: {
-            _id: "$status",
-            totalAmount: { $sum: "$amount" },
-          },
-        },
-      ])
-      .toArray();
-
-    const stats = {
-      totalPaid: statsResult.find((s) => s._id === "paid")?.totalAmount || 0,
-      totalPending:
-        statsResult.find((s) => s._id === "pending")?.totalAmount || 0,
-      totalCount,
-    };
-
-    const bills = await collection
-      .find(query)
-      .sort({ date: sortDirection })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .toArray();
+    // Pagination (on filtered set)
+    const startIndex = (page - 1) * limit;
+    const paginatedBills = filtered.slice(startIndex, startIndex + limit);
 
     return NextResponse.json(
       {
-        bills,
+        bills: paginatedBills,
         pagination: {
-          total: totalCount,
+          total: filtered.length,
           page,
           limit,
-          totalPages: Math.ceil(totalCount / limit),
+          totalPages: Math.ceil(filtered.length / limit),
         },
-        stats,
+        stats: {
+          totalPaid,
+          totalPending,
+          totalCount,
+        },
       },
       { status: 200 },
     );
@@ -84,7 +83,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { customer, quantity, amount, date } = body;
 
-    // Basic validation
     if (!customer || !amount) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -92,36 +90,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const collection = await getBillsCollection();
+    // Fetch existing for next invoice number
+    const allBills = await getBills();
+    let maxInvoice = 1000;
+    for (const b of allBills) {
+      const invNum = parseInt(b.invoice);
+      if (!isNaN(invNum) && invNum > maxInvoice) {
+        maxInvoice = invNum;
+      }
+    }
+    const nextInvoice = (maxInvoice + 1).toString();
 
-    // Fetch the latest bill to determine the next invoice number
-    const lastBill = await collection
-      .find({})
-      .sort({ invoice: -1 })
-      .limit(1)
-      .toArray();
-
-    // Determine next invoice number
-    const nextInvoice =
-      lastBill.length > 0 ? String(Number(lastBill[0].invoice) + 1) : "1001"; // starting from 1001 if none exists
-
-    // Prepare new bill data
     const newBill = {
       invoice: nextInvoice,
       date: date || new Date().toISOString(),
       customer,
       quantity,
-      amount,
-      status: "pending",
-      method: null,
-      paidAt: null,
+      amount: parseFloat(amount) || 0,
     };
 
-    // Insert into MongoDB
-    const result = await collection.insertOne(newBill);
+    const res = await createBill(newBill);
+    if (!res.success) {
+      return NextResponse.json({ error: res.message }, { status: 500 });
+    }
 
     return NextResponse.json(
-      { insertedId: result.insertedId, ...newBill },
+      { message: "Bill created successfully", invoice: nextInvoice },
       { status: 201 },
     );
   } catch (error) {
@@ -145,20 +139,14 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const collection = await getBillsCollection();
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          method,
-          status,
-          paidAt: status === "paid" ? new Date().toISOString() : null,
-        },
-      },
-    );
+    const res = await updateBill(id, {
+      status,
+      method: method || "",
+      paidAt: status === "paid" ? new Date().toISOString() : undefined,
+    });
 
-    if (result.matchedCount === 0) {
-      return NextResponse.json({ error: "Bill not found" }, { status: 404 });
+    if (!res.success) {
+      return NextResponse.json({ error: res.message }, { status: 404 });
     }
 
     return NextResponse.json(

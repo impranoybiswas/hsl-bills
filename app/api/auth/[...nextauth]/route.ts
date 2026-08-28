@@ -1,6 +1,6 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { getUsersCollection } from "@/app/libs/collection";
+import { getUserByEmail, createUser } from "@/app/libs/googleSheet";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -28,19 +28,18 @@ export const authOptions: AuthOptions = {
         token.email = user.email || "";
         token.name = user.name || "";
         token.image = user.image || "";
-        token.role = "user"; // default role
+        token.role = "viewer"; // default role until Sheet says otherwise
       }
 
       try {
         if (token.email) {
-          const users = await getUsersCollection();
-          const dbUser = await users.findOne({ email: token.email });
+          const dbUser = await getUserByEmail(token.email as string);
           if (dbUser?.role) {
             token.role = dbUser.role;
           }
         }
       } catch (err) {
-        console.error("DB fetch failed:", err);
+        console.error("fetch failed:", err);
       }
 
       return token;
@@ -58,28 +57,18 @@ export const authOptions: AuthOptions = {
       return session;
     },
 
-    // 🧩 3️⃣ Create or update user in DB on sign-in
+    // 🧩 3️⃣ Create or update user in Sheets on sign-in
     async signIn({ user, account }) {
-      const users = await getUsersCollection();
-
-      if (account?.provider === "google") {
-        const existingUser = await users.findOne({ email: user.email });
+      if (account?.provider === "google" && user.email) {
+        const existingUser = await getUserByEmail(user.email);
 
         if (!existingUser) {
-          await users.insertOne({
-            name: user.name,
+          await createUser({
+            name: user.name || "",
             email: user.email,
-            provider: "google",
-            image: user.image,
-            role: "user", // default role
-            createdAt: new Date().toISOString(),
-            lastSignInAt: new Date().toISOString(),
+            image: user.image || "",
+            role: "viewer",
           });
-        } else {
-          await users.updateOne(
-            { _id: existingUser._id },
-            { $set: { lastSignInAt: new Date().toISOString() } }
-          );
         }
       }
 

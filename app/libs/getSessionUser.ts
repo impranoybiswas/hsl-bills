@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getUsersCollection } from "@/app/libs/collection";
+import { getUserByEmail } from "@/app/libs/googleSheet";
 import { NextResponse } from "next/server";
 
 export async function getSessionUser() {
@@ -13,8 +13,7 @@ export async function getSessionUser() {
   }
 
   const email = session.user.email;
-  const users = await getUsersCollection();
-  const user = await users.findOne({ email });
+  const user = await getUserByEmail(email);
 
   if (!user) {
     return {

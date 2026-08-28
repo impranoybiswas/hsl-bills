@@ -5,12 +5,12 @@ import BillsTable from "./components/BillTable";
 
 import { TbLoader2 } from "react-icons/tb";
 import GuestView from "./components/GuestView";
-import UserView from "./components/UserView";
 import Navbar from "./components/Navbar";
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const userRole = session?.user?.role || "user";
+  const userRole = session?.user?.role || "viewer";
+  const userEmail = session?.user?.email || "";
   return (
     <main className="w-full h-dvh flex flex-col">
       <Navbar />
@@ -20,11 +20,7 @@ export default function Home() {
         </div>
       )}
       {status === "unauthenticated" && <GuestView />}
-      {status === "authenticated" && userRole === "user" && <UserView />}
-      {status === "authenticated" &&
-        (userRole === "viewer" || userRole === "editor") && (
-          <BillsTable userRole={userRole} />
-        )}
+      {status === "authenticated" && <BillsTable userRole={userRole} />}
     </main>
   );
 }

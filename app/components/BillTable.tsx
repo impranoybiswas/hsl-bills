@@ -91,13 +91,13 @@ export default function BillsTable({ userRole }: { userRole: string }) {
               <select
                 value={customer}
                 onChange={(e) => {
-                  setCustomer(e.target.value);
+                  setCustomer(e.target.value.toLowerCase());
                   setPage(1);
                 }}
               >
                 <option value="">Customers</option>
                 {uniqueCustomers.map((name) => (
-                  <option key={name} value={name}>
+                  <option key={name} value={name.toLowerCase()}>
                     {name}
                   </option>
                 ))}
@@ -169,9 +169,11 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                   >
                     <td className="px-4 py-2 text-center">{bill.invoice}</td>
                     <td className="px-4 py-2 text-center">
-                      {format(bill.date, "dd MMM yyyy")}
+                      {bill.date && !isNaN(new Date(bill.date).getTime())
+                        ? format(new Date(bill.date), "dd MMM yyyy")
+                        : "—"}
                     </td>
-                    <td className="px-4 py-2">{bill.customer}</td>
+                    <td className="px-4 py-2 capitalize">{bill.customer}</td>
                     <td className="px-4 py-2 capitalize text-center">
                       {bill.quantity}
                     </td>
@@ -190,8 +192,10 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                       )}
                     </td>
                     <td className="px-4 py-2 text-center">
-                      {bill.status === "paid"
-                        ? format(bill.paidAt || new Date(), "dd MMM yyyy")
+                      {bill.status === "paid" &&
+                      bill.paidAt &&
+                      !isNaN(new Date(bill.paidAt).getTime())
+                        ? format(new Date(bill.paidAt), "dd MMM yyyy")
                         : "—"}
                     </td>
                     <td className="px-4 py-2 uppercase text-center">
