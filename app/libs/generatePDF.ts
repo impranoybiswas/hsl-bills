@@ -48,7 +48,7 @@ export const generatePDF = async ({
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text(`Invoice No`, infoStartX, infoStartY + 16);
-  doc.setFont("levetica", "normal");
+  doc.setFont("helvetica", "normal");
   doc.text(`${":  " + invoice}`, infoStartX2, infoStartY + 16);
 
   doc.setFont("helvetica", "bold");
@@ -63,23 +63,23 @@ export const generatePDF = async ({
   // Customer Info
   doc.setFont("helvetica", "bold");
   doc.text(`Customer ID`, infoStartX, infoStartY + 28);
-  doc.setFont("levetica", "normal");
+  doc.setFont("helvetica", "normal");
   doc.text(
-    `${":  " + selectedCustomer.customerId || "N/A"}`,
+    `${":  " + (selectedCustomer.customerId || "N/A")}`,
     infoStartX2,
     infoStartY + 28,
   );
 
   doc.setFont("helvetica", "bold");
   doc.text(`Customer`, infoStartX, infoStartY + 34);
-  doc.setFont("levetica", "normal");
+  doc.setFont("helvetica", "normal");
   doc.text(`${":  " + selectedCustomer.name}`, infoStartX2, infoStartY + 34);
 
   doc.setFont("helvetica", "bold");
   doc.text(`Address`, infoStartX, infoStartY + 40);
-  doc.setFont("levetica", "normal");
+  doc.setFont("helvetica", "normal");
   doc.text(
-    `${":  " + selectedCustomer.address || "Not provided"}`,
+    `${":  " + (selectedCustomer.address || "Not provided")}`,
     infoStartX2,
     infoStartY + 40,
   );
@@ -142,13 +142,7 @@ export const generatePDF = async ({
     },
   });
 
-  // Prepare plain text (not JSON) for QR and display
-  const qrText = `HEALTHCARE SOLUTIONS LTD
-
-Invoice: ${invoice}
-Date: ${format(new Date(date), "dd MMM yyyy")}
-Customer: ${selectedCustomer.name}
-Total Amount: ৳${totalFormatted}`;
+  // QR code encodes the verification URL
 
   // Generate QR (base64 PNG)
   const qrDataUrl = await QRCode.toDataURL(
@@ -185,7 +179,7 @@ Total Amount: ৳${totalFormatted}`;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text(`Invoice No`, infoStartX, infoStartY + 16);
-    doc.setFont("levetica", "normal");
+    doc.setFont("helvetica", "normal");
     doc.text(`${":  " + invoice}`, infoStartX2, infoStartY + 16);
 
     doc.setFont("helvetica", "bold");
@@ -200,23 +194,23 @@ Total Amount: ৳${totalFormatted}`;
     // Customer Info
     doc.setFont("helvetica", "bold");
     doc.text(`Customer ID`, infoStartX, infoStartY + 28);
-    doc.setFont("levetica", "normal");
+    doc.setFont("helvetica", "normal");
     doc.text(
-      `${":  " + selectedCustomer.customerId || "N/A"}`,
+      `${":  " + (selectedCustomer.customerId || "N/A")}`,
       infoStartX2,
       infoStartY + 28,
     );
 
     doc.setFont("helvetica", "bold");
     doc.text(`Customer`, infoStartX, infoStartY + 34);
-    doc.setFont("levetica", "normal");
+    doc.setFont("helvetica", "normal");
     doc.text(`${":  " + selectedCustomer.name}`, infoStartX2, infoStartY + 34);
 
     doc.setFont("helvetica", "bold");
     doc.text(`Address`, infoStartX, infoStartY + 40);
-    doc.setFont("levetica", "normal");
+    doc.setFont("helvetica", "normal");
     doc.text(
-      `${":  " + selectedCustomer.address || "Not provided"}`,
+      `${":  " + (selectedCustomer.address || "Not provided")}`,
       infoStartX2,
       infoStartY + 40,
     );
@@ -226,7 +220,11 @@ Total Amount: ৳${totalFormatted}`;
       startY: infoStartY + 55,
       head: [["Name of the Product", "Quantity", "Date of Expiry"]],
       body: [
-        [selectedCustomer.product, quantity, expiryDate],
+        [
+          selectedCustomer.product,
+          quantity,
+          expiryDate ? format(new Date(expiryDate), "dd MMM yyyy") : "N/A",
+        ],
         ["", "", ""],
         ["", "", ""],
         ["", "", ""],

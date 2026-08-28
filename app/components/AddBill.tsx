@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, SubmitEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCustomers } from "../hooks/useCustomers";
 import axiosSecure from "../libs/axiosSecure";
 import toast from "react-hot-toast";
@@ -39,7 +39,7 @@ export default function AddBill({ userRole }: { userRole: string }) {
   }, [selectedCustomer]);
 
   // Handle Bill Creation
-  const handleAddBill = async (e: SubmitEvent) => {
+  const handleAddBill = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedCustomer) {
@@ -52,13 +52,11 @@ export default function AddBill({ userRole }: { userRole: string }) {
         customer: selectedCustomer.name,
         quantity: selectedCustomer.isMonthly ? "monthly" : quantity,
         amount: selectedCustomer.price * quantity,
-     
+        date: new Date().toISOString(),
       });
 
-
-
       toast.success(
-        `Bill added successfully! Invoice: ${response.data.invoice}`
+        `Bill added successfully! Invoice: ${response.data.invoice}`,
       );
 
       generatePDF({
