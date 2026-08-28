@@ -20,6 +20,7 @@ const toWords = new ToWords({
 });
 
 export const generatePDF = async ({
+  id,
   invoice,
   date,
   selectedCustomer,
@@ -56,7 +57,7 @@ export const generatePDF = async ({
   doc.text(
     `${":  " + format(new Date(date), "dd MMM yyyy")}`,
     infoStartX2,
-    infoStartY + 22
+    infoStartY + 22,
   );
 
   // Customer Info
@@ -66,7 +67,7 @@ export const generatePDF = async ({
   doc.text(
     `${":  " + selectedCustomer.customerId || "N/A"}`,
     infoStartX2,
-    infoStartY + 28
+    infoStartY + 28,
   );
 
   doc.setFont("helvetica", "bold");
@@ -80,7 +81,7 @@ export const generatePDF = async ({
   doc.text(
     `${":  " + selectedCustomer.address || "Not provided"}`,
     infoStartX2,
-    infoStartY + 40
+    infoStartY + 40,
   );
 
   // Table Section
@@ -150,9 +151,12 @@ Customer: ${selectedCustomer.name}
 Total Amount: ৳${totalFormatted}`;
 
   // Generate QR (base64 PNG)
-  const qrDataUrl = await QRCode.toDataURL(qrText, {
-    errorCorrectionLevel: "H",
-  });
+  const qrDataUrl = await QRCode.toDataURL(
+    `https://hsl-bills-pranoy.vercel.app/verify?id=${id}`,
+    {
+      errorCorrectionLevel: "H",
+    },
+  );
 
   // Place QR under the table, centered
 
@@ -190,7 +194,7 @@ Total Amount: ৳${totalFormatted}`;
     doc.text(
       `${":  " + format(new Date(date), "dd MMM yyyy")}`,
       infoStartX2,
-      infoStartY + 22
+      infoStartY + 22,
     );
 
     // Customer Info
@@ -200,7 +204,7 @@ Total Amount: ৳${totalFormatted}`;
     doc.text(
       `${":  " + selectedCustomer.customerId || "N/A"}`,
       infoStartX2,
-      infoStartY + 28
+      infoStartY + 28,
     );
 
     doc.setFont("helvetica", "bold");
@@ -214,7 +218,7 @@ Total Amount: ৳${totalFormatted}`;
     doc.text(
       `${":  " + selectedCustomer.address || "Not provided"}`,
       infoStartX2,
-      infoStartY + 40
+      infoStartY + 40,
     );
 
     // Table Section

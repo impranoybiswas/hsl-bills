@@ -55,11 +55,14 @@ export default function AddBill({ userRole }: { userRole: string }) {
      
       });
 
+
+
       toast.success(
         `Bill added successfully! Invoice: ${response.data.invoice}`
       );
 
       generatePDF({
+        id: response.data._id,
         invoice: response.data.invoice,
         date: new Date().toISOString(),
         selectedCustomer,

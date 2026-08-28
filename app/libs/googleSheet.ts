@@ -8,6 +8,7 @@ export type ActionResponse = {
   success: boolean;
   message: string;
   error?: string;
+  id?: string;
 };
 
 function generateId() {
@@ -240,8 +241,9 @@ export async function createBill(
       "paidAt",
     ]);
 
+    const newId = generateId();
     await sheet.addRow({
-      _id: generateId(),
+      _id: newId,
       invoice: bill.invoice,
       customer: bill.customer.toLowerCase(),
       quantity: bill.quantity.toString(),
@@ -256,6 +258,7 @@ export async function createBill(
     return {
       success: true,
       message: "Successfully added bill to Google Sheet!",
+      id: newId,
     };
   } catch (error: unknown) {
     const errorMessage =

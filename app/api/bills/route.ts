@@ -115,7 +115,11 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { message: "Bill created successfully", invoice: nextInvoice },
+      {
+        message: "Bill created successfully",
+        invoice: nextInvoice,
+        _id: res.id,
+      },
       { status: 201 },
     );
   } catch (error) {

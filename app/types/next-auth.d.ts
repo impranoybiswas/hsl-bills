@@ -24,6 +24,7 @@ declare global {
   }
 
   interface Invoice {
+    id: string;
     invoice: string;
     date: string;
     selectedCustomer: Customer;
