@@ -16,23 +16,30 @@ export async function GET(req: NextRequest) {
 
     const allBills = await getBills();
 
-    // Compute stats BEFORE filtering so they always reflect the full dataset
-    const totalCount = allBills.length;
-    const totalPaid = allBills
-      .filter((b) => b.status === "paid")
+    // Filter by customer first (case-insensitive and trimmed)
+    let customerFiltered = [...allBills];
+    if (customer) {
+      const normalizedCustomer = customer.trim().toLowerCase();
+      customerFiltered = customerFiltered.filter(
+        (b) => (b.customer || "").trim().toLowerCase() === normalizedCustomer,
+      );
+    }
+
+    // Compute stats based on the customer-filtered dataset
+    const totalCount = customerFiltered.length;
+    const totalPaid = customerFiltered
+      .filter((b) => (b.status || "").toLowerCase() === "paid")
       .reduce((acc, curr) => acc + curr.amount, 0);
-    const totalPending = allBills
-      .filter((b) => b.status === "pending")
+    const totalPending = customerFiltered
+      .filter((b) => (b.status || "").toLowerCase() === "pending")
       .reduce((acc, curr) => acc + curr.amount, 0);
 
-    // Filter for display
-    let filtered = [...allBills];
-    if (customer) {
-      filtered = filtered.filter((b) => b.customer === customer);
-    }
+    // Filter by status for table display
+    let filtered = [...customerFiltered];
     if (status) {
+      const normalizedStatus = status.trim().toLowerCase();
       filtered = filtered.filter(
-        (b) => (b.status || "").toLowerCase() === status.toLowerCase(),
+        (b) => (b.status || "").trim().toLowerCase() === normalizedStatus,
       );
     }
 

@@ -9,7 +9,6 @@ import { GoCheckCircleFill } from "react-icons/go";
 import { MdRadioButtonChecked } from "react-icons/md";
 import UpdateBill from "./UpdateBill";
 import { TbLoader2 } from "react-icons/tb";
-import { BsEye } from "react-icons/bs";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 
 export default function BillsTable({ userRole }: { userRole: string }) {
@@ -95,7 +94,7 @@ export default function BillsTable({ userRole }: { userRole: string }) {
                   setPage(1);
                 }}
               >
-                <option value="">Customers</option>
+                <option value="">All Customers</option>
                 {uniqueCustomers.map((name) => (
                   <option key={name} value={name.toLowerCase()}>
                     {name}
